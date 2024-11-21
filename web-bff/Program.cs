@@ -14,6 +14,7 @@ builder.Services.AddHttpClient<CoreServiceClient>();
 
 // Register services
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<JwtUtilService>();
 
 // Resource server configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -41,12 +42,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
                 return Task.CompletedTask;
             },
-            OnAuthenticationFailed = context =>
+            OnAuthenticationFailed = async context =>
             {
-                // Handle authentication failure
-                return Task.CompletedTask;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    message = "Authentication failed"
+                });
             },
-            OnTokenValidated = context =>
+            OnTokenValidated = async context =>
             {
                 var rawToken = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "").Trim();
 
@@ -61,8 +67,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     }
                     else
                     {
-                        context.Fail("SecurityToken is not a valid JwtSecurityToken.");
-                        return Task.CompletedTask;
+                        context.Fail("Invalid token format");
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            message = "Invalid token format"
+                        });
+
+                        return;
                     }
                 }
 
@@ -71,14 +85,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (clientId != builder.Configuration["Jwt:Audience"])
                 {
                     context.Fail("Invalid audience");
-                }
 
-                return Task.CompletedTask;
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    context.Response.ContentType = "application/json";
+
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        message = "Invalid audience"
+                    });
+
+                    return;
+                }
             }
         };
 
         options.MetadataAddress = builder.Configuration["Jwt:Issuer"] + "/.well-known/openid-configuration";
     });
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

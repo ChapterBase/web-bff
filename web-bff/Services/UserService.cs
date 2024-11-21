@@ -6,16 +6,22 @@ namespace web_bff.Services
     public class UserService
     {
         private readonly CoreServiceClient _coreServiceClient;
+        private readonly JwtUtilService _jwtUtilService;
 
-        public UserService(CoreServiceClient coreServiceClient)
+        public UserService(CoreServiceClient coreServiceClient, JwtUtilService jwtUtilService)
         {
             _coreServiceClient = coreServiceClient;
+            _jwtUtilService = jwtUtilService;
         }
 
         public async Task SaveUserAsync(string idToken)
         {
-            await _coreServiceClient.SaveUserAsync(idToken);
+            var userDto = _jwtUtilService.DecodeToken(idToken);
+
+            userDto.Role = "USER";
+            await _coreServiceClient.SaveUserAsync(userDto);
         }
+
 
         public object GetAllUsers()
         {

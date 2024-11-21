@@ -1,6 +1,6 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System.Text;
+using web_bff.Dtos;
 
 namespace web_bff.Controllers.Outbound
 {
@@ -22,15 +22,16 @@ namespace web_bff.Controllers.Outbound
             _httpClient.BaseAddress = new Uri(baseUrl);
         }
 
-        public async Task<HttpResponseMessage> SaveUserAsync(string idToken)
+        public async Task<HttpResponseMessage> SaveUserAsync(UserDto userDto)
         {
-            var queryParams = $"?idToken={Uri.EscapeDataString(idToken)}";
-            var response = await _httpClient.PostAsync($"User{queryParams}", null);
+            var jsonContent = new StringContent(
+                JsonConvert.SerializeObject(userDto),
+                Encoding.UTF8,
+                "application/json"
+                );
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Failed to call Core Service SaveUser API. Status Code: {response.StatusCode}");
-            }
+            var response = await _httpClient.PostAsync("/User", jsonContent);
+            response.EnsureSuccessStatusCode();
 
             return response;
         }
