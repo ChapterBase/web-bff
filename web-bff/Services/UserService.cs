@@ -1,16 +1,26 @@
-﻿
+﻿using System.Threading.Tasks;
+using web_bff.Controllers.Outbound;
+
 namespace web_bff.Services
 {
     public class UserService
     {
-        internal object? GetAllUsers()
+        private readonly CoreServiceClient _coreServiceClient;
+
+        public UserService(CoreServiceClient coreServiceClient)
         {
-            throw new NotImplementedException();
+            _coreServiceClient = coreServiceClient;
         }
 
-        internal void save(string idToken)
+        public async Task SaveUserAsync(string idToken)
         {
-            throw new NotImplementedException();
+            await _coreServiceClient.SaveUserAsync(idToken);
+        }
+
+        public object GetAllUsers()
+        {
+            // Mock implementation
+            return new[] { new { Id = 1, Name = "User1" }, new { Id = 2, Name = "User2" } };
         }
     }
 }

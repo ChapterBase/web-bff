@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using web_bff.Services;
 
 namespace web_bff.Controllers.Inbound
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize]
     public class UserController : Controller
     {
-
         private readonly UserService _userService;
 
         public UserController(UserService userService)
@@ -18,19 +15,17 @@ namespace web_bff.Controllers.Inbound
             _userService = userService;
         }
 
-        [HttpGet(Name = "GetUser")]
+        [HttpGet]
         public IActionResult Get()
         {
             return Ok(_userService.GetAllUsers());
         }
 
-        // create a post request to save user, get idToken from request params
-        [HttpPost(Name = "SaveUser")]
-        public IActionResult Post([FromQuery] string idToken)
+        [HttpPost]
+        public async Task<IActionResult> Post([FromQuery] string idToken)
         {
-            _userService.save(idToken);
+            await _userService.SaveUserAsync(idToken);
             return Ok();
         }
-
     }
 }
