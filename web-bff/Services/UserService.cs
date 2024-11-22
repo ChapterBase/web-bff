@@ -18,7 +18,7 @@ namespace web_bff.Services
         {
             var userDto = _jwtUtilService.DecodeToken(idToken);
 
-            userDto.Role = "USER";
+            userDto.Role = "CUSTOMER";
             await _coreServiceClient.SaveUserAsync(userDto);
         }
 

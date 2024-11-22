@@ -1,17 +1,15 @@
-﻿using Newtonsoft.Json;
-using System.Text;
+﻿using ChapterBaseAPI.Dtos;
+using RestSharp;
 using web_bff.Dtos;
 
 namespace web_bff.Controllers.Outbound
 {
     public class CoreServiceClient
     {
-        private readonly HttpClient _httpClient;
+        private readonly RestClient _restClient;
 
-        public CoreServiceClient(HttpClient httpClient, IConfiguration configuration)
+        public CoreServiceClient(IConfiguration configuration)
         {
-            _httpClient = httpClient;
-
             // Get base URL from appsettings.json
             var baseUrl = configuration["CoreService:BaseUrl"];
             if (string.IsNullOrEmpty(baseUrl))
@@ -19,21 +17,26 @@ namespace web_bff.Controllers.Outbound
                 throw new ArgumentNullException("CoreService:BaseUrl configuration is missing.");
             }
 
-            _httpClient.BaseAddress = new Uri(baseUrl);
+            _restClient = new RestClient(baseUrl);
         }
 
-        public async Task<HttpResponseMessage> SaveUserAsync(UserDto userDto)
+        public async Task<ResponseDto<object>> SaveUserAsync(UserDto userDto)
         {
-            var jsonContent = new StringContent(
-                JsonConvert.SerializeObject(userDto),
-                Encoding.UTF8,
-                "application/json"
-                );
+            var request = new RestRequest("/User", Method.Post);
+            request.AddJsonBody(userDto);
 
-            var response = await _httpClient.PostAsync("/User", jsonContent);
-            response.EnsureSuccessStatusCode();
+            return await ExecuteRequestAsync<ResponseDto<object>>(request);
+        }
 
-            return response;
+        private async Task<T> ExecuteRequestAsync<T>(RestRequest request) where T : class
+        {
+            var response = await _restClient.ExecuteAsync<T>(request);
+            if (!response.IsSuccessful || response.Data == null)
+            {
+                throw new Exception($"Request failed. StatusCode: {response.StatusCode}, Message: {response.ErrorMessage}");
+            }
+
+            return response.Data;
         }
     }
 }
