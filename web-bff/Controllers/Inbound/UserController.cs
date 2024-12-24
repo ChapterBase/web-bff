@@ -6,25 +6,18 @@ namespace web_bff.Controllers.Inbound
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : Controller
+    public class UserController(UserService userService) : Controller
     {
-        private readonly UserService _userService;
-
-        public UserController(UserService userService)
-        {
-            _userService = userService;
-        }
-
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(_userService.GetAllUsers());
+            return Ok(userService.GetAllUsers());
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromQuery] string idToken)
         {
-            await _userService.SaveUserAsync(idToken);
+            await userService.SaveUserAsync(idToken);
             return Ok();
         }
     }

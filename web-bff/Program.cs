@@ -10,10 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Register clients
-builder.Services.AddHttpClient<CoreServiceClient>();
+builder.Services.AddScoped<CoreServiceClient>();
 
 // Register services
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<JwtUtilService>();
 
 // Resource server configuration

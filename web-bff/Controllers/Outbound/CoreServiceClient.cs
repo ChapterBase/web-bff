@@ -10,7 +10,7 @@ namespace web_bff.Controllers.Outbound
 
         public CoreServiceClient(IConfiguration configuration)
         {
-            // Get base URL from appsettings.json
+            
             var baseUrl = configuration["CoreService:BaseUrl"];
             if (string.IsNullOrEmpty(baseUrl))
             {
@@ -20,6 +20,7 @@ namespace web_bff.Controllers.Outbound
             _restClient = new RestClient(baseUrl);
         }
 
+        // User
         public async Task<ResponseDto<object>> SaveUserAsync(UserDto userDto)
         {
             var request = new RestRequest("/User", Method.Post);
@@ -28,6 +29,33 @@ namespace web_bff.Controllers.Outbound
             return await ExecuteRequestAsync<ResponseDto<object>>(request);
         }
 
+        // Book
+        public async Task<ResponseDto<object>> Search(string query)
+        {
+
+            var request = new RestRequest("/Book/Search", Method.Get);
+            request.AddQueryParameter("query", query);
+
+            return await ExecuteRequestAsync<ResponseDto<object>>(request);
+        }
+
+        public async Task<ResponseDto<object>> FindAllBooksAsync(RequestDto request)
+        {
+            var restRequest = new RestRequest("/Book/All", Method.Post);
+            restRequest.AddJsonBody(request);
+
+            return await ExecuteRequestAsync<ResponseDto<object>>(restRequest);
+        }
+
+
+        public async Task<ResponseDto<BookDto>> FindBookByIdAsync(Guid id)
+        {
+            var request = new RestRequest($"/Book/{id}", Method.Get);
+
+            return await ExecuteRequestAsync<ResponseDto<BookDto>>(request);
+        }
+
+       
         private async Task<T> ExecuteRequestAsync<T>(RestRequest request) where T : class
         {
             var response = await _restClient.ExecuteAsync<T>(request);
@@ -38,5 +66,8 @@ namespace web_bff.Controllers.Outbound
 
             return response.Data;
         }
+
+
+        
     }
 }
