@@ -55,7 +55,17 @@ namespace web_bff.Controllers.Outbound
             return await ExecuteRequestAsync<ResponseDto<BookDto>>(request);
         }
 
-       
+        // Cart
+        public async Task<ResponseDto<object>> AddToCartAsync(Guid userId, Guid bookId, int qty)
+        {
+            var request = new RestRequest("/Cart", Method.Post);
+            request.AddQueryParameter("userId", userId.ToString());
+            request.AddQueryParameter("bookId", bookId.ToString());
+            request.AddQueryParameter("qty", qty.ToString());
+
+            return await ExecuteRequestAsync<ResponseDto<object>>(request);
+        }
+
         private async Task<T> ExecuteRequestAsync<T>(RestRequest request) where T : class
         {
             var response = await _restClient.ExecuteAsync<T>(request);
@@ -66,8 +76,7 @@ namespace web_bff.Controllers.Outbound
 
             return response.Data;
         }
-
-
+       
         
     }
 }
